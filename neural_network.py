@@ -30,7 +30,7 @@ class NeuralNetwork:
 	def set_trains(self, trains):
 		self.trains = trains
 
-		self.init_vecs([len(self.trains[0][0]), 3, 3, 3])
+		self.init_vecs([len(self.trains[0][1]), 3, 3, 3])
 		self.reset_weights()
 
 	def load_trained_file(self, fpath):
