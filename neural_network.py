@@ -51,10 +51,10 @@ class NeuralNetwork:
 				for k in xrange(self.neuron_cnts[i]+1):
 					fp.write('%.20f\n' % self.weights[i][j][k])
 
-	def fill_inputs(self, input_vec, func):
+	def fill_inputs(self, vec, func):
 		if not self.weights: raise ValueError, 'not yet trained'
 
-		self.inputs[0] = input_vec
+		self.inputs[0] = vec
 
 		for i, neuron_cnt in enumerate(self.neuron_cnts[1:]):
 			for j in xrange(neuron_cnt):
@@ -78,9 +78,9 @@ class NeuralNetwork:
 		err = 0
 
 		for train in self.trains:
-			self.fill_inputs(train[0], sigmoid)
+			self.fill_inputs(train[1], sigmoid)
 
-			desired = train[1]
+			desired = train[0]
 			err += sum((desired[i]-self.inputs[-1][i])*(desired[i]-self.inputs[-1][i]) for i in xrange(len(self.inputs[-1])))
 
 		return err/(len(self.trains)*len(self.inputs[-1]))
@@ -89,8 +89,8 @@ class NeuralNetwork:
 		if not self.trains: raise ValueError, 'training set not exists'
 
 		for train in self.trains:
-			self.fill_inputs(train[0], sigmoid)
-			self.calc_deltas(train[1])
+			self.fill_inputs(train[1], sigmoid)
+			self.calc_deltas(train[0])
 			self.update_weights()
 
 		return self.calc_err()
@@ -100,6 +100,6 @@ class NeuralNetwork:
 
 		while self.epoch() > desired_acc: pass
 
-	def test_input(self, input_vec):
-		self.fill_inputs(input_vec, sigmoid)
+	def test_input(self, vec):
+		self.fill_inputs(vec, sigmoid)
 		return self.inputs[-1]

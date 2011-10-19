@@ -23,16 +23,29 @@ def read_trains():
 			ch_cache[ch] = len(chs)
 			chs.append(ch)
 
-		trains.append([vec, ch_cache[ch]])
+		trains.append([ch_cache[ch], vec])
 
 	if not chs: raise ValueError, 'empty training set'
 
 	desired_list = [[0]*i+[1]+[0]*(len(chs)-1-i) for i in xrange(len(chs))]
 
 	for train in trains:
-		train[1] = desired_list[train[1]]
+		train[0] = desired_list[train[0]]
 
 	return trains, chs
+
+def read_tests():
+	tests = []
+
+	for line in open(TEST_SET_FPATH).read().splitlines():
+		words = re.findall('[^\\s$]+', line)
+		ch = words[0]
+		vec = [int(x) for x in words[1:-1]]
+
+		tests.append([ch, vec])
+
+	return tests
+
 
 def train(n_net, desired_acc):
 	idx = 0
@@ -49,21 +62,19 @@ def train(n_net, desired_acc):
 
 		if err <= desired_acc: break
 
-def test_input(n_net, desired_ch, chs, input_vec):
-	ch = chs[max(enumerate(n_net.test_input(input_vec)), key=lambda x: x[1])[0]]
-	return ch == desired_ch
+def test_input(n_net, vec, chs):
+	return chs[max(enumerate(n_net.test_input(vec)), key=lambda x: x[1])[0]]
 
 def test_inputs(n_net, chs):
 	total = 0
 	succ = 0
 
-	for line in open(TEST_SET_FPATH).read().splitlines():
-		words = re.findall('[^\\s$]+', line)
-		ch = words[0]
-		vec = [int(x) for x in words[1:-1]]
+	tests = read_tests()
+	if not tests: raise ValueError, 'test not exists'
 
+	for ch, vec in tests:
 		total += 1
-		if test_input(n_net, ch, chs, vec): succ += 1
+		if test_input(n_net, vec, chs) == ch: succ += 1
 
 	print 'Accuracy: %.1f%%' % (100.*succ/total)
 
