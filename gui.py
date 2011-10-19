@@ -5,7 +5,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 import re
 from neural_network import NeuralNetwork
-from opti_chara_reco import read_trains, read_tests, test_input, TRAINED_FPATH, DESIRED_ACCURACY
+from opti_chara_reco import read_trains, read_tests, test_input, TRAINED_FPATH, DESIRED_ACCURACY, train
 import itertools
 import random
 import thread
@@ -53,30 +53,38 @@ class Grid(QWidget):
 	def get_vec(self):
 		return list(itertools.chain.from_iterable(zip(*self.items)))
 
-	def mousePressEvent(self, ev):
+	def get_mouse_info(self, ev):
 		x = ev.pos().x()/GRID_ITEM_W
 		y = ev.pos().y()/GRID_ITEM_H
 
-		try: self.items[x][y] = self.pen_color = int(not self.items[x][y])
-		except IndexError: pass
+		if x < 0 or y < 0 or x >= self.w or y >= self.h: return
+
+		return x, y
+
+	def mousePressEvent(self, ev):
+		info = self.get_mouse_info(ev)
+		if not info: return
+		x, y = info
 
 		self.prev_x = x
 		self.prev_y = y
+
+		self.items[x][y] = self.pen_color = int(not self.items[x][y])
 
 		self.update()
 		self.parentWidget().test_grid()
 
 	def mouseMoveEvent(self, ev):
-		x = ev.pos().x()/GRID_ITEM_W
-		y = ev.pos().y()/GRID_ITEM_H
+		info = self.get_mouse_info(ev)
+		if not info: return
+		x, y = info
 
 		if self.prev_x == x and self.prev_y == y: return
 
-		try: self.items[x][y] = self.pen_color
-		except IndexError: pass
-
 		self.prev_x = x
 		self.prev_y = y
+
+		self.items[x][y] = self.pen_color
 
 		self.update()
 		self.parentWidget().test_grid()
@@ -166,7 +174,7 @@ class MainWnd(QWidget):
 
 		def proc():
 			self.n_net.set_trains(self.trains)
-			self.n_net.train(DESIRED_ACCURACY)
+			train(self.n_net, DESIRED_ACCURACY)
 			self.n_net.save_trained_file(TRAINED_FPATH)
 
 			self.train_done.emit()
@@ -180,7 +188,9 @@ class MainWnd(QWidget):
 	train_done = Signal()
 
 	def test_grid(self):
-		ch = test_input(self.n_net, self.grid.get_vec(), self.chs)
+		try: ch = test_input(self.n_net, self.grid.get_vec(), self.chs)
+		except ValueError: ch = '?'
+
 		self.out_g.setText(ch)
 
 def main():

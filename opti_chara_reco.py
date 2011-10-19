@@ -87,7 +87,7 @@ def main():
 		n_net.load_trained_file(TRAINED_FPATH)
 	else:
 		n_net.set_trains(trains)
-		n_net.train(DESIRED_ACCURACY)
+		train(n_net, DESIRED_ACCURACY)
 		n_net.save_trained_file(TRAINED_FPATH)
 
 	test_inputs(n_net, chs)
