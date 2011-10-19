@@ -1,9 +1,11 @@
-#!/usr/bin/env pypy
+#!/usr/bin/env python
 
 import re
 from neural_network import NeuralNetwork
 import os
 
+TRAINING_SET_FPATH = 'input/traindata.txt'
+TEST_SET_FPATH = 'input/testdata.txt'
 TRAINED_FPATH = 'trained.txt'
 DESIRED_ACCURACY = 0.01
 
@@ -12,7 +14,7 @@ def read_trains():
 	chs = []
 	ch_cache = {}
 
-	for line in open('traindata.txt').read().splitlines():
+	for line in open(TRAINING_SET_FPATH).read().splitlines():
 		words = re.findall('[^\\s$]+', line)
 		ch = words[0]
 		vec = [int(x) for x in words[1:-1]]
@@ -55,7 +57,7 @@ def test_inputs(n_net, chs):
 	total = 0
 	succ = 0
 
-	for line in open('testdata.txt').read().splitlines():
+	for line in open(TEST_SET_FPATH).read().splitlines():
 		words = re.findall('[^\\s$]+', line)
 		ch = words[0]
 		vec = [int(x) for x in words[1:-1]]
